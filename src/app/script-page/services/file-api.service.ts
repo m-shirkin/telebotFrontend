@@ -1,18 +1,15 @@
 import {Injectable} from '@angular/core';
-import {Observable, Subject} from 'rxjs';
+import {Observable} from 'rxjs';
 import {HttpClient} from '@angular/common/http';
 import {ApiConfig} from '../../app.config';
 import {map} from 'rxjs/operators';
 
 @Injectable()
 export class FileApiService {
-  private currentContents: Subject<string>;
-
   constructor(
     private apiConfig: ApiConfig,
     private http: HttpClient,
   ) {
-    this.currentContents = new Subject<string>();
   }
 
 
@@ -23,18 +20,11 @@ export class FileApiService {
       }));
   }
 
-  GetCurrentContentsObservable(): Observable<string> {
-    return this.currentContents;
-  }
-
-  loadFile(filename: string): Observable<void> {
+  loadFile(filename: string): Observable<string> {
     return this.http.get(
       this.apiConfig.apiUrl + 'telebot/files/' + filename,
       {
         responseType: 'text'
-      })
-      .pipe(map((contents: string): void => {
-        this.currentContents.next(contents);
-      }));
+      });
   }
 }

@@ -13,3 +13,7 @@ body {
 .container-fluid .mat-tab-body-content {
   overflow: hidden;
 }
+
+mat-tab-group.main-tabs > .mat-tab-body-wrapper {
+  flex-grow: 1;
+}

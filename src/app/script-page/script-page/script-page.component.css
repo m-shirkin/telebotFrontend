@@ -1,0 +1,12 @@
+.page-container {
+  padding-bottom: 12px;
+  --panel-height: 50px;
+}
+
+.page-container .file-panel {
+  height: var(--panel-height);
+}
+
+.page-container .editor-window {
+  height: calc(100% - var(--panel-height));
+}
