@@ -18,6 +18,7 @@ export class FileListComponent implements OnInit {
     private localFileCache: LocalFileCacheService,
   ) {
   }
+
   ngOnInit(): void {
     this.localFileCache.init().subscribe(
       (): void => {
@@ -27,5 +28,12 @@ export class FileListComponent implements OnInit {
 
   tabChanged(event: MatTabChangeEvent): void {
     this.localFileCache.setSelectedFile(event.tab.textLabel);
+  }
+
+  generateModifiedCheck(): (f: string) => boolean {
+    const cache = this.localFileCache;
+    return (f: string) => {
+      return cache.isModified(f);
+    };
   }
 }

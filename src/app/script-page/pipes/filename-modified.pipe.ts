@@ -3,16 +3,10 @@ import {LocalFileCacheService} from '../services/local-file-cache.service';
 
 @Pipe({
   name: 'filenameModified',
-  pure: false,
 })
 export class FilenameModifiedPipe implements PipeTransform {
-  constructor(
-    private localFileCache: LocalFileCacheService
-  ) {
-  }
-
-  transform(value: string): string {
-    if (this.localFileCache.isModified(value)) {
+  transform(value: string, modifiedCheck: (f: string) => boolean): string {
+    if (modifiedCheck(value)) {
       return value + '*';
     } else {
       return value;
