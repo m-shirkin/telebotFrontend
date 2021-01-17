@@ -6,6 +6,9 @@ import {MatTabsModule} from '@angular/material/tabs';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {ScriptPageModule} from './script-page/script.page.module';
 import {ApiConfig} from './app.config';
+import {MatButtonModule} from '@angular/material/button';
+import {UsersPageModule} from './users-page/users-page.module';
+import {MessagesPageModule} from './messages-page/messages-page.module';
 
 @NgModule({
   declarations: [
@@ -16,6 +19,9 @@ import {ApiConfig} from './app.config';
     MatTabsModule,
     BrowserAnimationsModule,
     ScriptPageModule,
+    MatButtonModule,
+    UsersPageModule,
+    MessagesPageModule,
   ],
   providers: [
     ApiConfig

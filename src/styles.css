@@ -17,3 +17,16 @@ body {
 mat-tab-group.main-tabs > .mat-tab-body-wrapper {
   flex-grow: 1;
 }
+
+.table-container {
+  overflow: auto;
+  height: 100%;
+}
+
+.table-container table {
+  min-width: 500px;
+}
+
+.table-container mat-paginator {
+  min-width: 500px;
+}

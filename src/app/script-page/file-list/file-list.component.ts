@@ -1,7 +1,7 @@
 import {Component, OnInit} from '@angular/core';
-import {FileApiService} from '../services/file-api.service';
 import {MatTabChangeEvent} from '@angular/material/tabs';
 import {LocalFileCacheService} from '../services/local-file-cache.service';
+import {Observable} from 'rxjs';
 
 @Component({
   selector: 'app-file-list',
@@ -9,21 +9,26 @@ import {LocalFileCacheService} from '../services/local-file-cache.service';
   styleUrls: ['./file-list.component.css']
 })
 export class FileListComponent implements OnInit {
+  fileListObservable: Observable<Array<string>>;
 
-  fileList: Array<string>;
-  runningFile = 'test1.ts';
+  runningFileObservable: Observable<string>;
 
   constructor(
-    private fileApi: FileApiService,
     private localFileCache: LocalFileCacheService,
   ) {
+    this.fileListObservable = this.localFileCache.getFileListChanged();
+    this.fileListObservable.subscribe(
+      (fileList: Array<string>) => {
+        this.onFileListChange(fileList);
+      }
+    );
+    this.runningFileObservable = this.localFileCache.getRunningFileChanged();
   }
 
   ngOnInit(): void {
-    this.localFileCache.init().subscribe(
-      (): void => {
-        this.fileList = this.localFileCache.getFileList();
-      });
+  }
+
+  onFileListChange(fileList: Array<string>): void {
   }
 
   tabChanged(event: MatTabChangeEvent): void {

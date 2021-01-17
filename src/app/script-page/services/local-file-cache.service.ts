@@ -1,7 +1,7 @@
 import {Injectable} from '@angular/core';
-import {Observable, Subject} from 'rxjs';
+import {from, Observable, Subject} from 'rxjs';
 import {FileApiService} from './file-api.service';
-import {map} from 'rxjs/operators';
+import {filter, last, map, mergeMap, takeLast} from 'rxjs/operators';
 
 interface ICache {
   contents: string;
@@ -12,7 +12,13 @@ interface ICache {
 const NOT_LOADED: ICache = {
   contents: '',
   modified: false,
-  loaded: false
+  loaded: false,
+};
+
+const NEW_FILE: ICache = {
+  contents: '',
+  modified: true,
+  loaded: true,
 };
 
 interface IFileCachedData {
@@ -23,7 +29,11 @@ interface IFileCachedData {
   providedIn: 'root'
 })
 export class LocalFileCacheService {
-  private currentTabContents: Subject<void>;
+  private currentTabChanged: Subject<string>;
+
+  private fileListChanged: Subject<Array<string>>;
+
+  private runningFileChanged: Subject<string>;
 
   private selectedFile: string;
 
@@ -32,43 +42,80 @@ export class LocalFileCacheService {
   constructor(
     private fileApi: FileApiService
   ) {
-    this.currentTabContents = new Subject<void>();
+    this.currentTabChanged = new Subject<string>();
+    this.fileListChanged = new Subject<Array<string>>();
+    this.runningFileChanged = new Subject<string>();
+    this.init().subscribe(() => {
+    });
   }
 
-  init(): Observable<void> {
+  private init(): Observable<void> {
     this.fileCachedData = {};
-    return this.fileApi.getFileList().pipe(map((fList: Array<string>) => {
-      for (const fName of fList) {
-        this.fileCachedData[fName] = NOT_LOADED;
-      }
-    }));
+    const fileListInit = this.fileApi.getFileList().pipe(
+      map(
+        (fList: Array<string>) => {
+          for (const fName of fList) {
+            this.fileCachedData[fName] = NOT_LOADED;
+          }
+          this.fileListChanged.next(fList);
+        }
+      )
+    );
+    const runningFileInit = this.fileApi.getRunningFile().pipe(
+      map(
+        (runningFile: string) => {
+          this.runningFileChanged.next(runningFile);
+        }
+      )
+    );
+    return from([fileListInit, runningFileInit]).pipe(
+      mergeMap(
+        (query: Observable<void>): Observable<void> => {
+          return query;
+        }
+      ),
+      last(),
+    );
   }
 
-  getFileList(): Array<string> {
+  private getFileList(): Array<string> {
     return Object.keys(this.fileCachedData);
   }
 
-  GetTabChangedObservable(): Observable<void> {
-    return this.currentTabContents;
+  private updateFileList(): void {
+    this.fileListChanged.next(this.getFileList());
+  }
+
+  getFileListChanged(): Observable<Array<string>> {
+    return this.fileListChanged;
+  }
+
+  getTabChanged(): Observable<string> {
+    return this.currentTabChanged;
   }
 
   setSelectedFile(filename: string): void {
     this.selectedFile = filename;
     if (!this.fileCachedData[filename].loaded) {
-      this.fileApi.loadFile(filename).subscribe((newContents: string): void => {
-        this.fileCachedData[filename] = {
-          contents: newContents,
-          loaded: true,
-          modified: false,
-        };
-        this.currentTabContents.next();
-      });
+      this.fileApi.loadFile(filename).subscribe(
+        (newContents: string): void => {
+          this.fileCachedData[filename] = {
+            contents: newContents,
+            loaded: true,
+            modified: false,
+          };
+          this.currentTabChanged.next(filename);
+        }
+      );
     } else {
-      this.currentTabContents.next();
+      this.currentTabChanged.next(filename);
     }
   }
 
   getSelectedFile(): string {
+    if (!this.selectedFile) {
+      this.setSelectedFile(this.getFileList()[0]);
+    }
     return this.selectedFile;
   }
 
@@ -88,5 +135,87 @@ export class LocalFileCacheService {
         loaded: true,
       };
     }
+  }
+
+  pushToServer(): Observable<void> {
+    return from(this.getFileList())
+      .pipe(
+        filter(
+          (filename: string): boolean => {
+            return this.isModified(filename);
+          }
+        ),
+        mergeMap((filename: string): Observable<void> => {
+          return this.fileApi.pushFile(
+            filename,
+            this.fileCachedData[filename].contents
+          ).pipe(
+            map(() => {
+              this.fileCachedData[filename].modified = false;
+            })
+          );
+        }),
+        takeLast(1),
+      );
+  }
+
+  private deleteFile(filename: string): Observable<void> {
+    return this.fileApi.deleteFile(filename)
+      .pipe(
+        map(
+          () => {
+            delete this.fileCachedData[filename];
+            this.updateFileList();
+          }
+        )
+      );
+  }
+
+  deleteSelected(): Observable<void> {
+    return this.deleteFile(this.getSelectedFile());
+  }
+
+  createFile(filename: string): void {
+    this.fileCachedData[filename] = NEW_FILE;
+    this.updateFileList();
+  }
+
+  private renameFile(filename: string, newFilename: string): Observable<void> {
+    const fileContents = this.fileCachedData[filename].contents;
+    return this.deleteFile(filename)
+      .pipe(
+        map(
+          () => {
+            this.fileCachedData[newFilename] = {
+              contents: fileContents,
+              loaded: true,
+              modified: true,
+            };
+            this.updateFileList();
+          }
+        )
+      );
+  }
+
+  renameSelected(newFilename: string): Observable<void> {
+    return this.renameFile(this.getSelectedFile(), newFilename);
+  }
+
+  getRunningFileChanged(): Observable<string> {
+    return this.runningFileChanged;
+  }
+
+  private runFile(filename: string): Observable<void> {
+    return this.fileApi.runFile(filename).pipe(
+      map(
+        (): void => {
+          this.runningFileChanged.next(filename);
+        }
+      )
+    );
+  }
+
+  runSelectedFile(): Observable<void> {
+    return this.runFile(this.selectedFile);
   }
 }

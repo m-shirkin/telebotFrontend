@@ -1,5 +1,4 @@
 import {Pipe, PipeTransform} from '@angular/core';
-import {LocalFileCacheService} from '../services/local-file-cache.service';
 
 @Pipe({
   name: 'filenameModified',

@@ -25,7 +25,7 @@ export class CodeEditorComponent implements AfterViewInit {
   constructor(
     private localFileCache: LocalFileCacheService,
   ) {
-    this.localFileCache.GetTabChangedObservable().subscribe(
+    this.localFileCache.getTabChanged().subscribe(
       (): void => {
         this.changeValue();
       });

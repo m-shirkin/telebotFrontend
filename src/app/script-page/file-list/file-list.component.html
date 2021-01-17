@@ -1,12 +1,10 @@
-<div class="col">
 <!--  <button class="mx-1" mat-button *ngFor="let fileName of fileList">{{fileName}}</button>-->
-  <mat-tab-group animationDuration="0ms" (selectedTabChange)="tabChanged($event)">
-    <mat-tab *ngFor="let filename of fileList" [label]="filename">
-      <ng-template mat-tab-label>
-        <div [class.running]="filename==runningFile">
-          {{filename | filenameModified:generateModifiedCheck()}}
-        </div>
-      </ng-template>
-    </mat-tab>
-  </mat-tab-group>
-</div>
+<mat-tab-group animationDuration="0ms" (selectedTabChange)="tabChanged($event)">
+  <mat-tab *ngFor="let filename of (fileListObservable | async)" [label]="filename">
+    <ng-template mat-tab-label>
+      <div [class.running]="filename==(runningFileObservable | async)">
+        {{filename | filenameModified:generateModifiedCheck()}}
+      </div>
+    </ng-template>
+  </mat-tab>
+</mat-tab-group>

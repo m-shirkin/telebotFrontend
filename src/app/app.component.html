@@ -4,16 +4,22 @@
       <div class="col h-100">
 
         <mat-tab-group animationDuration="0ms" class="d-flex justify-content-top h-100 main-tabs">
-          <mat-tab label="First">
-            <app-script-page></app-script-page>
+          <mat-tab label="Scripts">
+            <div class="page-container">
+              <app-script-page></app-script-page>
+            </div>
           </mat-tab>
 
-          <mat-tab label="Second">
-            Page 2
+          <mat-tab label="Users">
+            <div class="page-container">
+              <app-users-page></app-users-page>
+            </div>
           </mat-tab>
 
-          <mat-tab label="Third">
-            Page 3
+          <mat-tab label="Messages">
+            <div class="page-container">
+              <app-messages-page></app-messages-page>
+            </div>
           </mat-tab>
 
         </mat-tab-group>

@@ -1,10 +1,13 @@
-<div class="d-flex row h-100 page-container pe-0">
-  <div class="row pe-0 file-panel">
-    <div class="col-12 pe-0">
-      <app-file-list></app-file-list>
-    </div>
+<div class="d-flex flex-column justify-content-between file-panel">
+  <div class="button-panel d-flex flex-row">
+    <app-file-button [type]="'save'"></app-file-button>
+    <app-file-button [type]="'delete'"></app-file-button>
+    <app-file-button [type]="'run'"></app-file-button>
   </div>
-  <div class="row pe-0 editor-window">
-    <app-code-editor class="pe-0 h-100"></app-code-editor>
+  <div class="pe-0 me-auto flex-row">
+    <app-file-list></app-file-list>
   </div>
+</div>
+<div class="row pe-0 editor-window">
+  <app-code-editor class="pe-0 h-100"></app-code-editor>
 </div>
