@@ -1,7 +1,7 @@
 import {Injectable} from '@angular/core';
 import {from, Observable, Subject} from 'rxjs';
 import {FileApiService} from './file-api.service';
-import {filter, last, map, mergeMap, takeLast} from 'rxjs/operators';
+import {concatAll, filter, last, map, mergeMap, takeLast} from 'rxjs/operators';
 
 interface ICache {
   contents: string;
@@ -17,7 +17,7 @@ const NOT_LOADED: ICache = {
 
 const NEW_FILE: ICache = {
   contents: '',
-  modified: true,
+  modified: false,
   loaded: true,
 };
 
@@ -113,9 +113,6 @@ export class LocalFileCacheService {
   }
 
   getSelectedFile(): string {
-    if (!this.selectedFile) {
-      this.setSelectedFile(this.getFileList()[0]);
-    }
     return this.selectedFile;
   }
 
@@ -175,21 +172,29 @@ export class LocalFileCacheService {
     return this.deleteFile(this.getSelectedFile());
   }
 
-  createFile(filename: string): void {
-    this.fileCachedData[filename] = NEW_FILE;
-    this.updateFileList();
+  createFile(filename: string): Observable<void> {
+    return this.fileApi.pushFile(filename, '').pipe(
+      map(
+        (): void => {
+          this.fileCachedData[filename] = NEW_FILE;
+          this.updateFileList();
+        }
+      )
+    );
   }
 
   private renameFile(filename: string, newFilename: string): Observable<void> {
     const fileContents = this.fileCachedData[filename].contents;
-    return this.deleteFile(filename)
+    return from([this.deleteFile(filename), this.createFile(newFilename)])
       .pipe(
+        concatAll(),
+        last(),
         map(
           () => {
             this.fileCachedData[newFilename] = {
               contents: fileContents,
               loaded: true,
-              modified: true,
+              modified: false,
             };
             this.updateFileList();
           }

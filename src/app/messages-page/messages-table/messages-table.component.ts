@@ -32,6 +32,8 @@ export class MessagesTableComponent implements AfterViewInit {
   }
 
   ngAfterViewInit(): void {
+    // this.sort.sort(this.sort.sortables.get('date'));
+    // this.sort.direction = 'desc';
     this.updateApi().subscribe();
   }
 

@@ -2,6 +2,9 @@ import {Injectable} from '@angular/core';
 import {LocalFileCacheService} from '../services/local-file-cache.service';
 import {from} from 'rxjs';
 import {concatAll} from 'rxjs/operators';
+import {MatDialog} from '@angular/material/dialog';
+import {ConfirmDialogComponent} from '../../dialogs/confirm-dialog/confirm-dialog.component';
+import {TextInputDialogComponent} from '../../dialogs/text-input-dialog/text-input-dialog.component';
 
 export interface IButtonController {
   readonly color: string;
@@ -9,8 +12,6 @@ export interface IButtonController {
 
   onClick: (e: MouseEvent) => void;
 }
-
-export type ButtonType = 'save' | 'delete' | 'run';
 
 @Injectable({
   providedIn: 'root'
@@ -34,7 +35,8 @@ class SaveButtonController implements IButtonController {
 })
 class DeleteButtonController implements IButtonController {
   constructor(
-    protected localFileCache: LocalFileCacheService
+    protected localFileCache: LocalFileCacheService,
+    private dialog: MatDialog,
   ) {
   }
 
@@ -42,7 +44,103 @@ class DeleteButtonController implements IButtonController {
   readonly iconName = 'delete';
 
   onClick(e: MouseEvent): void {
-    this.localFileCache.deleteSelected().subscribe();
+    this.dialog.open(
+      ConfirmDialogComponent,
+      {
+        data: {
+          title: 'Warning',
+          text: `Are you sure you want to delete "${this.localFileCache.getSelectedFile()}"?`,
+        }
+      }
+    ).afterClosed().subscribe(
+      (result: boolean): void => {
+        if (result) {
+          this.localFileCache.deleteSelected().subscribe();
+        }
+      }
+    );
+  }
+}
+
+@Injectable({
+  providedIn: 'root'
+})
+class NewFileButtonController implements IButtonController {
+  constructor(
+    protected localFileCache: LocalFileCacheService,
+    private dialog: MatDialog,
+  ) {
+  }
+
+  readonly color = '#dddddd';
+  readonly iconName = 'text_snippet';
+
+  onClick(e: MouseEvent): void {
+    this.dialog.open(
+      TextInputDialogComponent,
+      {
+        data: {
+          title: 'Create a file',
+          text: 'Choose a name for the new file',
+          inputData: {
+            label: 'File name',
+            placeholder: 'newfile.ts',
+          }
+        }
+      }
+    ).afterClosed().subscribe(
+      (result: string): void => {
+        if (result) {
+          if (!result.match(/.*\.ts/i)) {
+            result += '.ts';
+          } else {
+            result = result.slice(0, result.length - 3) + '.ts';
+          }
+          this.localFileCache.createFile(result).subscribe();
+        }
+      }
+    );
+  }
+}
+
+@Injectable({
+  providedIn: 'root'
+})
+class RenameFileButtonController implements IButtonController {
+  constructor(
+    protected localFileCache: LocalFileCacheService,
+    private dialog: MatDialog,
+  ) {
+  }
+
+  readonly color = '#dddd33';
+  readonly iconName = 'edit';
+
+  onClick(e: MouseEvent): void {
+    this.dialog.open(
+      TextInputDialogComponent,
+      {
+        data: {
+          title: `Rename file "${this.localFileCache.getSelectedFile()}"`,
+          text: 'Choose a new name',
+          inputData: {
+            label: 'File name',
+            placeholder: 'newfile.ts',
+          }
+        }
+      }
+    ).afterClosed().subscribe(
+      (result: string): void => {
+        if (result) {
+          if (!result.match(/.*\.ts/i)) {
+            result += '.ts';
+          } else {
+            result = result.slice(0, result.length - 3) + '.ts';
+          }
+          this.localFileCache.renameSelected(result).subscribe();
+        }
+      }
+    );
   }
 }
 
@@ -68,24 +166,30 @@ class RunButtonController implements IButtonController {
   }
 }
 
+interface IButtonControllerLookup {
+  save: SaveButtonController;
+  remove: DeleteButtonController;
+  run: RunButtonController;
+  create: NewFileButtonController;
+  rename: RenameFileButtonController;
+}
+
+export type ButtonType = keyof IButtonControllerLookup;
+
 @Injectable({
   providedIn: 'root'
 })
-export class ButtonControllerFactory {
+export class ButtonControllerFactory implements IButtonControllerLookup {
   constructor(
-    private saveController: SaveButtonController,
-    private deleteController: DeleteButtonController,
-    private runController: RunButtonController,
+    public save: SaveButtonController,
+    public remove: DeleteButtonController,
+    public run: RunButtonController,
+    public create: NewFileButtonController,
+    public rename: RenameFileButtonController,
   ) {
   }
 
   getController(type: ButtonType): IButtonController {
-    if (type === 'save') {
-      return this.saveController;
-    } else if (type === 'delete') {
-      return this.deleteController;
-    } else if (type === 'run') {
-      return this.runController;
-    }
+    return this[type];
   }
 }

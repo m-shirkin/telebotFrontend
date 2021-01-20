@@ -12,6 +12,7 @@ import {FilenameModifiedPipe} from './pipes/filename-modified.pipe';
 import { FileButtonComponent } from './file-button/file-button.component';
 import {MatIconModule} from '@angular/material/icon';
 import { ArrayEmptyPipe } from './pipes/array-empty.pipe';
+import {DialogsModule} from '../dialogs/dialogs.module';
 
 @NgModule({
   declarations: [
@@ -31,6 +32,7 @@ import { ArrayEmptyPipe } from './pipes/array-empty.pipe';
     MatButtonModule,
     MatTabsModule,
     MatIconModule,
+    DialogsModule,
   ],
   providers: [
     FileApiService,

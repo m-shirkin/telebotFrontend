@@ -1,10 +1,12 @@
 <div class="d-flex flex-column justify-content-between file-panel">
   <div class="button-panel d-flex flex-row">
+    <app-file-button [type]="'create'"></app-file-button>
     <app-file-button [type]="'save'"></app-file-button>
-    <app-file-button [type]="'delete'"></app-file-button>
+    <app-file-button [type]="'rename'"></app-file-button>
+    <app-file-button [type]="'remove'"></app-file-button>
     <app-file-button [type]="'run'"></app-file-button>
   </div>
-  <div class="pe-0 me-auto flex-row">
+  <div class="pe-0 flex-row">
     <app-file-list></app-file-list>
   </div>
 </div>

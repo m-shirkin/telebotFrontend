@@ -1,34 +1,38 @@
-import {Component, OnInit} from '@angular/core';
-import {MatTabChangeEvent} from '@angular/material/tabs';
+import {Component, ViewChild} from '@angular/core';
+import {MatTabChangeEvent, MatTabGroup} from '@angular/material/tabs';
 import {LocalFileCacheService} from '../services/local-file-cache.service';
-import {Observable} from 'rxjs';
 
 @Component({
   selector: 'app-file-list',
   templateUrl: './file-list.component.html',
   styleUrls: ['./file-list.component.css']
 })
-export class FileListComponent implements OnInit {
-  fileListObservable: Observable<Array<string>>;
+export class FileListComponent {
+  runningFilename: string;
 
-  runningFileObservable: Observable<string>;
+  @ViewChild(MatTabGroup) matTabGroup: MatTabGroup;
 
   constructor(
-    private localFileCache: LocalFileCacheService,
+    public localFileCache: LocalFileCacheService,
   ) {
-    this.fileListObservable = this.localFileCache.getFileListChanged();
-    this.fileListObservable.subscribe(
+    this.localFileCache.getFileListChanged().subscribe(
       (fileList: Array<string>) => {
         this.onFileListChange(fileList);
       }
     );
-    this.runningFileObservable = this.localFileCache.getRunningFileChanged();
-  }
-
-  ngOnInit(): void {
+    this.localFileCache.getRunningFileChanged().subscribe(
+      (fname: string): void => {
+        this.runningFilename = fname;
+      }
+    );
   }
 
   onFileListChange(fileList: Array<string>): void {
+    if (this.matTabGroup.selectedIndex === 0) {
+      this.localFileCache.setSelectedFile(
+        fileList[0]
+      );
+    }
   }
 
   tabChanged(event: MatTabChangeEvent): void {

@@ -1,22 +1,22 @@
 <div class="table-container">
   <table mat-table matSort [dataSource]="dataSource" [fixedLayout]="true" (matSortChange)="onSortChange($event)" class="mat-elevation-z8">
     <ng-container matColumnDef="message_id">
-      <th mat-header-cell *matHeaderCellDef mat-sort-header> Message ID</th>
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>Message ID</th>
       <td mat-cell *matCellDef="let element"> {{element.message_id}} </td>
     </ng-container>
 
     <ng-container matColumnDef="from_user_id">
-      <th mat-header-cell *matHeaderCellDef mat-sort-header> ID of sender</th>
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>ID of sender</th>
       <td mat-cell *matCellDef="let element"> {{element.from_user_id}} </td>
     </ng-container>
 
     <ng-container matColumnDef="date">
-      <th mat-header-cell *matHeaderCellDef mat-sort-header> Date</th>
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>Date</th>
       <td mat-cell *matCellDef="let element"> {{element.date + '000' | date:"dd/MM/yyyy HH:mm:ss"}} </td>
     </ng-container>
 
     <ng-container matColumnDef="text">
-      <th mat-header-cell *matHeaderCellDef mat-sort-header> Text</th>
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>Text</th>
       <td mat-cell *matCellDef="let element"> {{element.text}} </td>
     </ng-container>
 

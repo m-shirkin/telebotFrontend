@@ -30,3 +30,16 @@ mat-tab-group.main-tabs > .mat-tab-body-wrapper {
 .table-container mat-paginator {
   min-width: 500px;
 }
+
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #242424;
+}
+
+::-webkit-scrollbar-corner {
+  background-color: rgba(0, 0, 0, 0);
+}
