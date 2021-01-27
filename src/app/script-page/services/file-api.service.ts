@@ -4,6 +4,9 @@ import {HttpClient} from '@angular/common/http';
 import {ApiConfig} from '../../app.config';
 import {map} from 'rxjs/operators';
 
+/**
+ * API for managing files on the server
+ */
 @Injectable({
   providedIn: 'root'
 })
@@ -14,6 +17,9 @@ export class FileApiService {
   ) {
   }
 
+  /**
+   * Get list with all files on the server
+   */
   getFileList(): Observable<Array<string>> {
     return this.http.get(this.apiConfig.apiUrl + 'telebot/files')
       .pipe(map((value: object): Array<string> => {
@@ -21,6 +27,10 @@ export class FileApiService {
       }));
   }
 
+  /**
+   * Load contents of a specific file
+   * @param filename: name of the file
+   */
   loadFile(filename: string): Observable<string> {
     return this.http.get(
       this.apiConfig.apiUrl + 'telebot/files/' + filename,
@@ -29,6 +39,11 @@ export class FileApiService {
       });
   }
 
+  /**
+   * Rewrite contents of a specific file, or create new file
+   * @param filename: name of the file
+   * @param contents: new contents
+   */
   pushFile(filename: string, contents: string): Observable<void> {
     return this.http.post(
       this.apiConfig.apiUrl + 'telebot/files/' + filename,
@@ -39,6 +54,10 @@ export class FileApiService {
     ));
   }
 
+  /**
+   * Delete specific file
+   * @param filename: name of the file
+   */
   deleteFile(filename: string): Observable<void> {
     return this.http.delete(
       this.apiConfig.apiUrl + 'telebot/files/' + filename,
@@ -48,6 +67,9 @@ export class FileApiService {
     ));
   }
 
+  /**
+   * Get a name of the running file
+   */
   getRunningFile(): Observable<string> {
     return this.http.get(
       this.apiConfig.apiUrl + 'telebot/run',
@@ -56,6 +78,10 @@ export class FileApiService {
     });
   }
 
+  /**
+   * Send a specific file for an execution
+   * @param filename: name of the file
+   */
   runFile(filename: string): Observable<void> {
     return this.http.post(
       this.apiConfig.apiUrl + 'telebot/run',

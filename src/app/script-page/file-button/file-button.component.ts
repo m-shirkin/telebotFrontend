@@ -1,6 +1,9 @@
 import {Component, Input, OnInit} from '@angular/core';
 import {IButtonController, ButtonControllerFactory, ButtonType} from './button-controller-factory.service';
 
+/**
+ * Button component for different controllers
+ */
 @Component({
   selector: 'app-file-button',
   templateUrl: './file-button.component.html',

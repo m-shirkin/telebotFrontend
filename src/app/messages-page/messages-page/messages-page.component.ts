@@ -1,5 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import {Component, OnInit} from '@angular/core';
 
+/**
+ * Tab with table of messages
+ */
 @Component({
   selector: 'app-messages-page',
   templateUrl: './messages-page.component.html',
@@ -7,7 +10,8 @@ import { Component, OnInit } from '@angular/core';
 })
 export class MessagesPageComponent implements OnInit {
 
-  constructor() { }
+  constructor() {
+  }
 
   ngOnInit(): void {
   }

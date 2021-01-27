@@ -13,6 +13,7 @@ import { FileButtonComponent } from './file-button/file-button.component';
 import {MatIconModule} from '@angular/material/icon';
 import { ArrayEmptyPipe } from './pipes/array-empty.pipe';
 import {DialogsModule} from '../dialogs/dialogs.module';
+import {MatTooltipModule} from '@angular/material/tooltip';
 
 @NgModule({
   declarations: [
@@ -21,19 +22,20 @@ import {DialogsModule} from '../dialogs/dialogs.module';
     FileListComponent,
     FilenameModifiedPipe,
     FileButtonComponent,
-    ArrayEmptyPipe
+    ArrayEmptyPipe,
   ],
   exports: [
     ScriptPageComponent
   ],
-  imports: [
-    CommonModule,
-    HttpClientModule,
-    MatButtonModule,
-    MatTabsModule,
-    MatIconModule,
-    DialogsModule,
-  ],
+    imports: [
+        CommonModule,
+        HttpClientModule,
+        MatButtonModule,
+        MatTabsModule,
+        MatIconModule,
+        DialogsModule,
+        MatTooltipModule,
+    ],
   providers: [
     FileApiService,
     LocalFileCacheService,

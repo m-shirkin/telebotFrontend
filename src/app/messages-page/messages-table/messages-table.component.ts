@@ -6,6 +6,9 @@ import {IMessageEntity} from '../message-entity';
 import {MatSort, Sort} from '@angular/material/sort';
 import {SortDirection} from '../../services/base-table-api.service';
 
+/**
+ * Table with messages
+ */
 @Component({
   selector: 'app-messages-table',
   templateUrl: './messages-table.component.html',
@@ -20,15 +23,19 @@ export class MessagesTableComponent implements AfterViewInit {
   ];
 
   dataSource: Observable<Array<IMessageEntity>>;
+
+  /**
+   * Current sort direction
+   */
   sortDirection: SortDirection;
 
   @ViewChild(MatPaginator) paginator: MatPaginator;
-  @ViewChild(MatSort) sort: MatSort;
+  // @ViewChild(MatSort) sort: MatSort;
 
   constructor(
     public messagesApi: MessagesApiService,
   ) {
-    this.dataSource = this.messagesApi.getVisibleElements();
+    this.dataSource = this.messagesApi.elementsVisible;
   }
 
   ngAfterViewInit(): void {
@@ -37,6 +44,9 @@ export class MessagesTableComponent implements AfterViewInit {
     this.updateApi().subscribe();
   }
 
+  /**
+   * Reload current page contents from server
+   */
   updateApi(
     pageIndex: number = this.paginator.pageIndex,
     pageSize: number = this.paginator.pageSize

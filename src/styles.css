@@ -43,3 +43,7 @@ mat-tab-group.main-tabs > .mat-tab-body-wrapper {
 ::-webkit-scrollbar-corner {
   background-color: rgba(0, 0, 0, 0);
 }
+
+button.mat-button-base:focus {
+  outline: rgba(0,0,0,0) auto 0;
+}

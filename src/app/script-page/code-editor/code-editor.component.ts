@@ -1,8 +1,12 @@
 import {AfterViewInit, Component} from '@angular/core';
 import {editor} from 'monaco-editor';
-import IStandaloneEditorConstructionOptions = editor.IStandaloneEditorConstructionOptions;
 import {LocalFileCacheService} from '../services/local-file-cache.service';
+import IStandaloneEditorConstructionOptions = editor.IStandaloneEditorConstructionOptions;
 
+/**
+ * Code editor component, based on Monaco Editor by Microsoft
+ * https://microsoft.github.io/monaco-editor/
+ */
 @Component({
   selector: 'app-code-editor',
   templateUrl: './code-editor.component.html',
@@ -16,8 +20,16 @@ export class CodeEditorComponent implements AfterViewInit {
     automaticLayout: true,
   };
 
+  /**
+   * Editor is inserted into this HTML element
+   * @private
+   */
   private editorElement: HTMLElement;
 
+  /**
+   * This typescript code is included into code model on editor creation
+   * @private
+   */
   private readonly scriptHeader = `
     declare var bot: any;
   `;
@@ -25,6 +37,7 @@ export class CodeEditorComponent implements AfterViewInit {
   constructor(
     private localFileCache: LocalFileCacheService,
   ) {
+    // On tab change, also change editor contents
     this.localFileCache.getTabChanged().subscribe(
       (): void => {
         this.changeValue();
@@ -33,7 +46,15 @@ export class CodeEditorComponent implements AfterViewInit {
 
   ngAfterViewInit(): void {
     this.editorElement = document.getElementById('editor-container');
+    this.subscribeToEvents();
+    this.insertLoader();
+  }
 
+  /**
+   * Subscribe to events to transfer data between editor HTML element and the component
+   * @private
+   */
+  private subscribeToEvents(): void {
     this.editorElement.addEventListener('editorLoaded', () => {
       this.onEditorLoaded();
     });
@@ -41,7 +62,13 @@ export class CodeEditorComponent implements AfterViewInit {
     this.editorElement.addEventListener('textChanged', (e: CustomEvent) => {
       this.onTextChanged(e.detail);
     });
+  }
 
+  /**
+   * Insert script 'loader.js' into the page, that loads all code editor libraries
+   * @private
+   */
+  private insertLoader(): void {
     const loaderScript = document.createElement('script');
     loaderScript.type = 'text/javascript';
     loaderScript.src = './assets/monaco/vs/loader.js';
@@ -59,6 +86,14 @@ export class CodeEditorComponent implements AfterViewInit {
     this.localFileCache.updateContents(newText);
   }
 
+  /**
+   * Create an instance of Monaco Code Editor.
+   * ARM version is used here, and is loaded by inserting a pure js script into the page.
+   * As a consequence, there is no reference to the editor instance in the component code,
+   * and all data exchange is performed through events.
+   * Using ESM version would be more optimal, but I could not get it to work properly.
+   * @private
+   */
   private initMonaco(): void {
     const initScript = document.createElement('script');
     initScript.type = 'text/javascript';
@@ -105,6 +140,10 @@ export class CodeEditorComponent implements AfterViewInit {
     // );
   }
 
+  /**
+   * Change text inside the editor
+   * @private
+   */
   private changeValue(): void {
     if (this.editorElement) {
       this.editorElement.dispatchEvent(new CustomEvent('onFileChange', {

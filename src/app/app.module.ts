@@ -9,7 +9,7 @@ import {ApiConfig} from './app.config';
 import {MatButtonModule} from '@angular/material/button';
 import {UsersPageModule} from './users-page/users-page.module';
 import {MessagesPageModule} from './messages-page/messages-page.module';
-import { ConfirmDialogComponent } from './dialogs/confirm-dialog/confirm-dialog.component';
+import {MatSnackBarModule} from '@angular/material/snack-bar';
 
 @NgModule({
   declarations: [
@@ -23,6 +23,7 @@ import { ConfirmDialogComponent } from './dialogs/confirm-dialog/confirm-dialog.
     MatButtonModule,
     UsersPageModule,
     MessagesPageModule,
+    MatSnackBarModule
   ],
   providers: [
     ApiConfig

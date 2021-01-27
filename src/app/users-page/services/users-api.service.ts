@@ -4,6 +4,9 @@ import {BaseTableApiService} from '../../services/base-table-api.service';
 import {HttpClient} from '@angular/common/http';
 import {ApiConfig} from '../../app.config';
 
+/**
+ * Service for retrieving user data from the server.
+ */
 @Injectable({
   providedIn: 'root'
 })

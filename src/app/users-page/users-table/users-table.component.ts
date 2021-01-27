@@ -6,6 +6,9 @@ import {MatPaginator, PageEvent} from '@angular/material/paginator';
 import {SortDirection} from '../../services/base-table-api.service';
 import {MatSort, Sort} from '@angular/material/sort';
 
+/**
+ * Table with users
+ */
 @Component({
   selector: 'app-users-table',
   templateUrl: './users-table.component.html',
@@ -21,6 +24,10 @@ export class UsersTableComponent implements AfterViewInit {
   ];
 
   dataSource: Observable<Array<IUserEntity>>;
+
+  /**
+   * Current sort direction
+   */
   sortDirection: SortDirection;
 
   @ViewChild(MatPaginator) paginator: MatPaginator;
@@ -29,13 +36,16 @@ export class UsersTableComponent implements AfterViewInit {
   constructor(
     public usersApi: UsersApiService,
   ) {
-    this.dataSource = this.usersApi.getVisibleElements();
+    this.dataSource = this.usersApi.elementsVisible;
   }
 
   ngAfterViewInit(): void {
     this.updateApi().subscribe();
   }
 
+  /**
+   * Reload current page contents from server
+   */
   updateApi(
     pageIndex: number = this.paginator.pageIndex,
     pageSize: number = this.paginator.pageSize

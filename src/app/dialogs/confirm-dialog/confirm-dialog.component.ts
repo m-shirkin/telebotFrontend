@@ -6,6 +6,9 @@ interface IConfirmDialogData {
   text?: string;
 }
 
+/**
+ * Dialog template with "OK" and "Cancel" buttons
+ */
 @Component({
   selector: 'app-confirm-dialog',
   templateUrl: './confirm-dialog.component.html',

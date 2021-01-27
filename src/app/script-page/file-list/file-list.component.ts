@@ -2,6 +2,9 @@ import {Component, ViewChild} from '@angular/core';
 import {MatTabChangeEvent, MatTabGroup} from '@angular/material/tabs';
 import {LocalFileCacheService} from '../services/local-file-cache.service';
 
+/**
+ * File tabs to switch between files in editor window
+ */
 @Component({
   selector: 'app-file-list',
   templateUrl: './file-list.component.html',
@@ -39,6 +42,10 @@ export class FileListComponent {
     this.localFileCache.setSelectedFile(event.tab.textLabel);
   }
 
+  /**
+   * Create a function, that given a file name returns whether it has been modified or not.
+   * Used to mark modified files.
+   */
   generateModifiedCheck(): (f: string) => boolean {
     const cache = this.localFileCache;
     return (f: string) => {

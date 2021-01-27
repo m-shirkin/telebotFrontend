@@ -1,5 +1,8 @@
 import {Pipe, PipeTransform} from '@angular/core';
 
+/**
+ * Adds '*' if provided modifiedCheck returns true
+ */
 @Pipe({
   name: 'filenameModified',
 })

@@ -1,8 +1,15 @@
 import {Injectable} from '@angular/core';
-import {from, Observable, Subject} from 'rxjs';
+import {from, Observable, Subject, Subscriber} from 'rxjs';
 import {FileApiService} from './file-api.service';
 import {concatAll, filter, last, map, mergeMap, takeLast} from 'rxjs/operators';
 
+/**
+ * Interface for storing information about a cached file
+ *
+ * contents: file contents.
+ * modified: whether file was modified or not. If true, file was modified and its contents are different from actual contents on the server.
+ * loaded: whether file was loaded from the server.
+ */
 interface ICache {
   contents: string;
   modified: boolean;
@@ -21,22 +28,49 @@ const NEW_FILE: ICache = {
   loaded: true,
 };
 
+/**
+ * Interface for storing cached file data.
+ */
 interface IFileCachedData {
-  [index: string]: ICache;
+  [filename: string]: ICache;
 }
 
+/**
+ * Service for storing cached file data locally.
+ * Each file is loaded only once and only modified files are saved on server.
+ */
 @Injectable({
   providedIn: 'root'
 })
 export class LocalFileCacheService {
+  /**
+   * Observable with current file tab opened.
+   * @private
+   */
   private currentTabChanged: Subject<string>;
 
+  /**
+   * Observable with current file list.
+   * @private
+   */
   private fileListChanged: Subject<Array<string>>;
 
+  /**
+   * Observable with current running file.
+   * @private
+   */
   private runningFileChanged: Subject<string>;
 
+  /**
+   * Current file tab opened.
+   * @private
+   */
   private selectedFile: string;
 
+  /**
+   * Data with all files and their cached contents.
+   * @private
+   */
   private fileCachedData: IFileCachedData;
 
   constructor(
@@ -49,6 +83,10 @@ export class LocalFileCacheService {
     });
   }
 
+  /**
+   * On init pull file list and running file name from the server.
+   * @private
+   */
   private init(): Observable<void> {
     this.fileCachedData = {};
     const fileListInit = this.fileApi.getFileList().pipe(
@@ -78,22 +116,40 @@ export class LocalFileCacheService {
     );
   }
 
+  /**
+   * Get cached file list.
+   * @private
+   */
   private getFileList(): Array<string> {
     return Object.keys(this.fileCachedData);
   }
 
+  /**
+   * Push current file list into the observable fileListChanged.
+   * @private
+   */
   private updateFileList(): void {
     this.fileListChanged.next(this.getFileList());
   }
 
+  /**
+   * Get reference to fileListChanged observable.
+   */
   getFileListChanged(): Observable<Array<string>> {
     return this.fileListChanged;
   }
 
+  /**
+   * Get reference to currentTabChanged observable.
+   */
   getTabChanged(): Observable<string> {
     return this.currentTabChanged;
   }
 
+  /**
+   * Set new file as selected, pulling its contents from the server if necessary.
+   * @param filename: new selected file
+   */
   setSelectedFile(filename: string): void {
     this.selectedFile = filename;
     if (!this.fileCachedData[filename].loaded) {
@@ -112,18 +168,32 @@ export class LocalFileCacheService {
     }
   }
 
+  /**
+   * Get selected file name
+   */
   getSelectedFile(): string {
     return this.selectedFile;
   }
 
+  /**
+   * Get true or false based on whether a file was modified or not.
+   * @param filename
+   */
   isModified(filename: string): boolean {
     return this.fileCachedData[filename] && this.fileCachedData[filename].modified;
   }
 
+  /**
+   * Get contents of a currently selected file.
+   */
   getCurrentContents(): string {
     return this.fileCachedData[this.getSelectedFile()].contents;
   }
 
+  /**
+   * Update cached contents of a selected file.
+   * @param newContents
+   */
   updateContents(newContents: string): void {
     if (this.getCurrentContents() !== newContents) {
       this.fileCachedData[this.selectedFile] = {
@@ -134,6 +204,9 @@ export class LocalFileCacheService {
     }
   }
 
+  /**
+   * Push all modified files to server.
+   */
   pushToServer(): Observable<void> {
     return from(this.getFileList())
       .pipe(
@@ -156,6 +229,11 @@ export class LocalFileCacheService {
       );
   }
 
+  /**
+   * Delete a specific file on server, then from cache.
+   * @param filename
+   * @private
+   */
   private deleteFile(filename: string): Observable<void> {
     return this.fileApi.deleteFile(filename)
       .pipe(
@@ -168,10 +246,17 @@ export class LocalFileCacheService {
       );
   }
 
+  /**
+   * Delete the selected file on server, then from cache.
+   */
   deleteSelected(): Observable<void> {
     return this.deleteFile(this.getSelectedFile());
   }
 
+  /**
+   * Create a file with empty contents on server, then in cache.
+   * @param filename
+   */
   createFile(filename: string): Observable<void> {
     return this.fileApi.pushFile(filename, '').pipe(
       map(
@@ -183,33 +268,58 @@ export class LocalFileCacheService {
     );
   }
 
+  /**
+   * Rename a file by creating a new file with different name and same contents and deleting old file.
+   * @param filename
+   * @param newFilename
+   * @private
+   */
   private renameFile(filename: string, newFilename: string): Observable<void> {
     const fileContents = this.fileCachedData[filename].contents;
-    return from([this.deleteFile(filename), this.createFile(newFilename)])
+    return from([
+      this.fileApi.pushFile(newFilename, fileContents),
+      new Observable<void>((observer: Subscriber<void>) => {
+        this.fileCachedData[newFilename] = {
+          contents: fileContents,
+          loaded: true,
+          modified: false,
+        };
+        observer.next();
+        observer.complete();
+      }),
+      this.deleteFile(filename),
+    ])
       .pipe(
         concatAll(),
         last(),
         map(
           () => {
-            this.fileCachedData[newFilename] = {
-              contents: fileContents,
-              loaded: true,
-              modified: false,
-            };
             this.updateFileList();
           }
         )
       );
   }
 
+  /**
+   * Rename selected file by creating a new file with different name and same contents and deleting old file.
+   * @param newFilename
+   */
   renameSelected(newFilename: string): Observable<void> {
     return this.renameFile(this.getSelectedFile(), newFilename);
   }
 
+  /**
+   * Get a reference to an observable with running file mane.
+   */
   getRunningFileChanged(): Observable<string> {
     return this.runningFileChanged;
   }
 
+  /**
+   * Run a specific file.
+   * @param filename
+   * @private
+   */
   private runFile(filename: string): Observable<void> {
     return this.fileApi.runFile(filename).pipe(
       map(
@@ -220,6 +330,9 @@ export class LocalFileCacheService {
     );
   }
 
+  /**
+   * Run selected file.
+   */
   runSelectedFile(): Observable<void> {
     return this.runFile(this.selectedFile);
   }

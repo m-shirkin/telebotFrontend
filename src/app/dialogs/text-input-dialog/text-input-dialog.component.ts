@@ -11,6 +11,9 @@ interface ITextInputDialogData {
   };
 }
 
+/**
+ * Dialog template with a single text input
+ */
 @Component({
   selector: 'app-text-input-dialog',
   templateUrl: './text-input-dialog.component.html',

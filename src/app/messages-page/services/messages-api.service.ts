@@ -4,6 +4,9 @@ import {ApiConfig} from '../../app.config';
 import {BaseTableApiService} from '../../services/base-table-api.service';
 import {IMessageEntity} from '../message-entity';
 
+/**
+ * Service for retrieving message data from server
+ */
 @Injectable({
   providedIn: 'root'
 })
